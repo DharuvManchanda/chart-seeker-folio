@@ -30,8 +30,9 @@ export const useAuthStore = create<AuthState>()(
             email,
             password,
           });
+          
 
-          if (response.success && response.data) {
+          if (response.data.success && response.data) {
             const { token, user } = response.data;
             localStorage.setItem('auth_token', token);
             set({
@@ -58,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
             name,
           });
 
-          if (response.success) {
+          if (response.data.success) {
             // After successful registration, automatically log in
             await get().login(email, password);
           } else {
@@ -85,7 +86,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const response: ApiResponse<User> = await apiClient.get('/auth/me');
-          if (response.success && response.data) {
+          if (response.data.success && response.data) {
             set({
               user: response.data,
               token,
