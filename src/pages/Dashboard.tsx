@@ -9,6 +9,7 @@ import { MetaDataCard } from '../components/ui/MetaDataCard';
 import { useAuthStore } from '../store/authStore';
 import { useStockStore } from '../store/stockStore';
 import { LogOut, BarChart3, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const Dashboard: React.FC = () => {
   const { user, logout, checkAuth } = useAuthStore();
@@ -38,6 +39,11 @@ export const Dashboard: React.FC = () => {
                   {user?.name || user?.email}
                 </span>
               </div>
+              <Link to="/profile">
+                <Button variant="outline" size="sm">
+                  Profile
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
