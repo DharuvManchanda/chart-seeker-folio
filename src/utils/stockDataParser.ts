@@ -2,7 +2,7 @@
 import { StockApiResponse, ParsedStockData } from '../types/stock';
 
 export function parseStockData(apiResponse: StockApiResponse): ParsedStockData {
-  const metaData = apiResponse['Meta Data'];
+  const metaData = apiResponse['Meta Data']; 
   
   // Find the time series key dynamically
   const timeSeriesKey = Object.keys(apiResponse).find(key => 

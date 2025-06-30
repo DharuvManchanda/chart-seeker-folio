@@ -14,6 +14,7 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, checkAuth } = useAuthStore();
   
+  
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -22,6 +23,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
+
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
