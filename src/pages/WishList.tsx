@@ -5,11 +5,13 @@ import { useAuthStore } from '../store/authStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { User, Heart, Trash2, Play } from 'lucide-react';
 import { useStockStore } from '../store/stockStore';
+import { StockQueryForm } from '@/components/forms/StockQueryForm';
 
 export const WishList: React.FC = () => {
   const { user } = useAuthStore();
   const { items, removeFromWishlist, executeWishlistItem, fetchWishlistItems } = useWishlistStore();
   const { fetchStockData } = useStockStore();
+  const [stockData, setStockData] = React.useState(null);
 
   useEffect(() => {
     if (user) {
@@ -26,7 +28,8 @@ export const WishList: React.FC = () => {
 
       if (response.data.success) {
         // Use fetchStockData with the saved options from the response
-        fetchStockData(response.data.options);
+        const data = await fetchStockData(response.data.options);
+        setStockData(data);
         console.log('Fetched stock data using executed wishlist item options.');
       } else {
         console.error('Execution failed:', response.data.message);
@@ -48,7 +51,7 @@ export const WishList: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-        {/* Wishlist Section */}
+          {/* Wishlist Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -115,6 +118,16 @@ export const WishList: React.FC = () => {
               )}
             </CardContent>
           </Card>
+          {stockData && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Stock Data</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StockQueryForm />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
