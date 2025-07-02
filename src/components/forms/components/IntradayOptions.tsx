@@ -39,7 +39,7 @@ export const IntradayOptions: React.FC<IntradayOptionsProps> = ({ control, regis
           )}
         />
         {errors.interval && (
-          <p className="text-red-500 text-sm mt-1">{errors.interval.message}</p>
+          <p className="text-red-500 text-sm mt-1">{String(errors.interval.message || 'Invalid interval')}</p>
         )}
       </div>
 
