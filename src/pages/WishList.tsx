@@ -1,18 +1,21 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '../store/authStore';
 import { useWishlistStore } from '../store/wishlistStore';
-import { User, Heart, Trash2, Play } from 'lucide-react';
 import { useStockStore } from '../store/stockStore';
-import { StockQueryForm } from '@/components/forms/StockQueryForm';
+import { StockChart } from '@/components/charts/StockChart';
+import { TimeSeriesTable } from '@/components/tables/TimeSeriesTable';
+import { MetaDataCard } from '@/components/ui/MetaDataCard';
+import { User, Heart, Trash2, Play } from 'lucide-react';
+import { parseStockData } from '../utils/stockDataParser';
 
 export const WishList: React.FC = () => {
   const { user } = useAuthStore();
   const { items, removeFromWishlist, executeWishlistItem, fetchWishlistItems } = useWishlistStore();
-  const { fetchStockData } = useStockStore();
-  const [stockData, setStockData] = React.useState(null);
-
+  const { currentData, isLoading, error, clearData } = useStockStore();
+  
   useEffect(() => {
     if (user) {
       fetchWishlistItems();
@@ -23,19 +26,33 @@ export const WishList: React.FC = () => {
 
   const handleExecuteWishlist = async (name: string) => {
     try {
+      clearData();
       const response = await executeWishlistItem(name);
       console.log('Executed wishlist item response:', response);
 
-      if (response.data.success) {
-        // Use fetchStockData with the saved options from the response
-        const data = await fetchStockData(response.data.options);
-        setStockData(data);
-        console.log('Fetched stock data using executed wishlist item options.');
+      if (response.data.success && response.data.data) {
+        // Parse the nested response structure
+        const parsedData = parseStockData(response.data.data);
+        // Update the stock store directly
+        useStockStore.setState({ 
+          currentData: parsedData, 
+          isLoading: false, 
+          error: null 
+        });
+        console.log('Parsed and set stock data:', parsedData);
       } else {
         console.error('Execution failed:', response.data.message);
+        useStockStore.setState({ 
+          error: response.data.message || 'Failed to execute wishlist item',
+          isLoading: false 
+        });
       }
     } catch (error) {
       console.error('Failed to execute wishlist item:', error);
+      useStockStore.setState({ 
+        error: error instanceof Error ? error.message : 'An error occurred',
+        isLoading: false 
+      });
     }
   };
 
@@ -49,7 +66,7 @@ export const WishList: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Wishlist Section */}
           <Card>
@@ -98,9 +115,10 @@ export const WishList: React.FC = () => {
                           size="sm"
                           onClick={() => handleExecuteWishlist(item.name)}
                           className="flex items-center gap-2"
+                          disabled={isLoading}
                         >
                           <Play className="h-4 w-4" />
-                          Execute
+                          {isLoading ? 'Loading...' : 'Execute'}
                         </Button>
                         <Button
                           variant="outline"
@@ -118,15 +136,43 @@ export const WishList: React.FC = () => {
               )}
             </CardContent>
           </Card>
-          {stockData && (
+
+          {/* Loading State */}
+          {isLoading && (
             <Card>
-              <CardHeader>
-                <CardTitle>Stock Data</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <StockQueryForm />
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Fetching stock data...</p>
+                </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardTitle className="text-red-600">Error</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-red-600">{error}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Stock Data Display */}
+          {currentData && !isLoading && (
+            <div className="space-y-6">
+              {/* Meta Data */}
+              <MetaDataCard metaData={currentData.metaData} />
+              
+              {/* Chart */}
+              <StockChart data={currentData} />
+              
+              {/* Table */}
+              <TimeSeriesTable data={currentData} />
+            </div>
           )}
         </div>
       </main>

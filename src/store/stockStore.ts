@@ -8,7 +8,7 @@ interface StockState {
   currentData: ParsedStockData | null;
   isLoading: boolean;
   error: string | null;
-  fetchStockData: (options: StockQueryOptions) => Promise<void>;
+  fetchStockData: (options: StockQueryOptions) => Promise<ParsedStockData>;
   clearData: () => void;
 }
 
@@ -17,7 +17,7 @@ export const useStockStore = create<StockState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchStockData: async (options: StockQueryOptions) => {
+  fetchStockData: async (options: StockQueryOptions): Promise<ParsedStockData> => {
     set({ isLoading: true, error: null });
     try {
       const response = await apiClient.post<{ success: boolean; data: StockApiResponse }>('/stock-data', {
@@ -31,6 +31,7 @@ export const useStockStore = create<StockState>((set) => ({
           isLoading: false,
           error: null,
         });
+        return parsedData;
       } else {
         throw new Error('Failed to fetch stock data');
       }
@@ -39,6 +40,7 @@ export const useStockStore = create<StockState>((set) => ({
         isLoading: false,
         error: error instanceof Error ? error.message : 'An error occurred',
       });
+      throw error;
     }
   },
 
