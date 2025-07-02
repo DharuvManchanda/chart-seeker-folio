@@ -73,7 +73,7 @@ export const StockQueryForm: React.FC<StockQueryFormProps> = ({ onQuerySuccess }
         outputsize: data.outputsize,
         datatype: data.datatype,
       };
-
+       
       if (data.function === 'TIME_SERIES_INTRADAY') {
         options.interval = data.interval;
         options.adjusted = data.adjusted;
@@ -92,6 +92,20 @@ export const StockQueryForm: React.FC<StockQueryFormProps> = ({ onQuerySuccess }
   };
 
   const handleSaveToWishlist = async () => {
+    const currentData = useStockStore.getState().currentData;
+
+    if (!currentData) {
+      toast.error('No stock data available to save.');
+      return;
+    }
+
+    const symbol = currentData.metaData["2. Symbol"];
+
+    if (!symbol) {
+      toast.error('Stock symbol is missing.');
+      return;
+    }
+    
     const data = getValues();
     const wishlistName = prompt('Enter a name for this query:');
     
@@ -100,7 +114,7 @@ export const StockQueryForm: React.FC<StockQueryFormProps> = ({ onQuerySuccess }
     try {
       const options: StockQueryOptions = {
         function: data.function,
-        symbol: data.symbol,
+        symbol: symbol,
         outputsize: data.outputsize,
         datatype: data.datatype,
       };
@@ -312,7 +326,7 @@ export const StockQueryForm: React.FC<StockQueryFormProps> = ({ onQuerySuccess }
               type="button"
               variant="outline"
               onClick={handleSaveToWishlist}
-              disabled={isLoadingWishlist}
+              disabled={isLoadingWishlist || !useStockStore.getState().currentData}
               className="flex items-center gap-2"
             >
               <Heart className="h-4 w-4" />
