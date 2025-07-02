@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +19,9 @@ export const WishList: React.FC = () => {
     if (user) {
       fetchWishlistItems();
     }
-  }, [fetchWishlistItems, user]);
+    // Clear any existing stock data when component mounts
+    clearData();
+  }, [fetchWishlistItems, clearData, user]);
 
   console.log('WishList items state:', items);
 
